@@ -1,0 +1,7 @@
+const MainContainer = () =>{
+    return(
+        <>
+        
+        </>
+    )
+}

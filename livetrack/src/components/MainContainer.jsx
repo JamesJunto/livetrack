@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { useState, useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
 
@@ -20,7 +20,7 @@ const MainContainer = () => {
             position.coords.longitude
           ]);
 
-        },
+        },  
 
         (err) => {
           setError(err.message);
@@ -40,7 +40,6 @@ const MainContainer = () => {
 
   }, []);
 
-  console.log(location)
 
   if (error) {
     return <p>{error}</p>;
@@ -63,6 +62,8 @@ const MainContainer = () => {
           attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+          <Marker position={location}/>
 
       </MapContainer>
 

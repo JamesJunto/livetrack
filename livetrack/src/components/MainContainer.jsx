@@ -1,75 +1,42 @@
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import { useState, useEffect } from 'react';
-import 'leaflet/dist/leaflet.css';
+    import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+    import 'leaflet/dist/leaflet.css';
+    import { useLocation } from '../hooks/useLocation';
+    import { createRoom } from '../services/roomService';
 
-const MainContainer = () => {
+    const MainContainer = () => {
+    const { location, error } = useLocation();
 
-  const [location, setLocation] = useState(null);
-  const [error, setError] = useState(null);
+      if (error) {
+        return <p>{error}</p>;
+      }
 
-  useEffect(() => {
+      if (!location) {
+        return <p>Loading...</p>;
+      }else{
+        createRoom(location)
+      }
 
-    if (navigator.geolocation) {
+      return (
+        <div className="h-screen w-full">
 
-      navigator.geolocation.getCurrentPosition(
+          <MapContainer
+            center={location}
+            zoom={13}
+            className="h-full w-full"
+          >
 
-        (position) => {
+            <TileLayer
+              attribution='&copy; OpenStreetMap contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
 
-          setLocation([
-            position.coords.latitude,
-            position.coords.longitude
-          ]);
+              <Marker position={location}/>
 
-        },  
+          </MapContainer>
 
-        (err) => {
-          setError(err.message);
-        },
-        {
-          enableHighAccuracy: true
-        }
-
+        </div>
       );
-
-
-    } else {
-
-      setError("Geolocation is not supported by this browser.");
 
     }
 
-  }, []);
-
-
-  if (error) {
-    return <p>{error}</p>;
-  }
-
-  if (!location) {
-    return <p>Loading...</p>;
-  }
-
-  return (
-    <div className="h-screen w-full">
-
-      <MapContainer
-        center={location}
-        zoom={13}
-        className="h-full w-full"
-      >
-
-        <TileLayer
-          attribution='&copy; OpenStreetMap contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-          <Marker position={location}/>
-
-      </MapContainer>
-
-    </div>
-  );
-
-}
-
-export default MainContainer;
+    export default MainContainer;

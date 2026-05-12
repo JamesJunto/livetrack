@@ -3,6 +3,7 @@ import { db } from "../firebaseConfig";
 
 export const createRoom = async (location) => {
     const roomid = crypto.randomUUID();
+    const userid = crypto.randomUUID();
 
     if (!location) {
         console.log("No location yet");
@@ -10,9 +11,8 @@ export const createRoom = async (location) => {
     }
 
     await setDoc(
-        doc(db, "rooms", roomid, "users", "user1"),
+        doc(db, "rooms", roomid, "users", userid),
         {
-            name: "Example",
             createdAt: Date.now(),
             location: location
         }
@@ -20,3 +20,21 @@ export const createRoom = async (location) => {
 
     return roomid;
 };
+
+export const joinRoom = async (roomid, location) =>{
+     const userId = crypto.randomUUID();
+
+     await setDoc(
+        doc(db, "rooms", roomid, "users", userId),
+        {
+            joinedAt: Date.now(),
+            location: location,
+        }
+
+    );
+
+     alert("joining room")
+
+     return userid
+
+}

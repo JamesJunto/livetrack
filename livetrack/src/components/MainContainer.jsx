@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useLocation } from '../hooks/useLocation';
-import { createRoom } from '../services/roomService';
+import { createRoom,joinRoom } from '../services/roomService';
 import { useState } from 'react';
 
 const MainContainer = () => {
@@ -21,16 +21,16 @@ const MainContainer = () => {
   const handleCreateRoom = async () => {
     const id = await createRoom(location);
 
-    // save room id
     setRoomId(id);
   };
 
-  const handleJoinRoom = () => {
-    if (!joinRoomId) return;
+  const handleJoinRoom = async (joinRoomId, location) => {
+    if (!joinRoomId){
+      alert("no room id")
+      return;
+    }
 
-    alert(`Joining room: ${joinRoomId}`);
-
-    // navigate(`/room/${joinRoomId}`)
+    await joinRoom(joinRoomId, location)
   };
 
   return (
@@ -83,7 +83,7 @@ const MainContainer = () => {
             />
 
             <button
-              onClick={handleJoinRoom}
+              onClick={()=> handleJoinRoom(joinRoomId, location)}
               className="bg-gray-800 text-white px-4 py-2 rounded"
             >
               Join Link

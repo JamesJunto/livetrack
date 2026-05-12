@@ -7,10 +7,6 @@ import {createRoom} from "./services/roomService"
 
 function App() {
 
-  useEffect(()=>{
-    createRoom()
-  },[])
-
   return (
     <MainContainer/>
   )

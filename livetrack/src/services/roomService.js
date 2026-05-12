@@ -1,16 +1,22 @@
-import {doc,setDoc} from "firebase/firestore"
-import { db } from "../firebaseConfig"
-import { useLocation } from "../hooks/useLocation";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 export const createRoom = async (location) => {
+    const roomid = crypto.randomUUID();
 
-  await setDoc(doc(db, "rooms", "room123", "users", "user1"), {
-    name: "Example",
-    createdAt: Date.now(),
-    location: location
-  });
+    if (!location) {
+        console.log("No location yet");
+        return null;
+    }
 
-  console.log("Saved!");    
-};  
+    await setDoc(
+        doc(db, "rooms", roomid, "users", "user1"),
+        {
+            name: "Example",
+            createdAt: Date.now(),
+            location: location
+        }
+    );
 
-
+    return roomid;
+};

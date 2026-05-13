@@ -22,6 +22,7 @@ export const createRoom = async (location) => {
 };
 
 export const joinRoom = async (roomid, location) =>{
+
      const userId = crypto.randomUUID();
 
      await setDoc(
@@ -35,6 +36,6 @@ export const joinRoom = async (roomid, location) =>{
 
      alert("joining room")
 
-     return userid
+    return userid
 
 }

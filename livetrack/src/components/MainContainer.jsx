@@ -1,14 +1,39 @@
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import { useLocation } from '../hooks/useLocation';
-import { createRoom,joinRoom } from '../services/roomService';
-import { useState } from 'react';
+import { createRoom, joinRoom } from '../services/roomService';
+import { useState, useEffect } from 'react';
+import { collection, onSnapshot } from "firebase/firestore"
+import { db } from '../firebaseConfig';
 
 const MainContainer = () => {
   const { location, error } = useLocation();
-
   const [roomId, setRoomId] = useState('');
   const [joinRoomId, setJoinRoomId] = useState('');
+  const [users, setUsers] = useState([])
+
+  useEffect(() => {
+
+    if (!joinRoomId && !roomId) return
+
+    const activeRoom = joinRoomId || roomId
+
+    const unsub = onSnapshot(
+      collection(db, "rooms", activeRoom, "users"),
+      (snapshot) => {
+
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+
+        setUsers(data)
+      }
+    )
+
+    return () => unsub()
+
+  }, [roomId, joinRoomId])
 
   if (error) {
     return <p>{error}</p>;
@@ -24,8 +49,8 @@ const MainContainer = () => {
     setRoomId(id);
   };
 
-  const handleJoinRoom = async (joinRoomId, location) => {
-    if (!joinRoomId){
+  const handleJoinRoom = async (joinRoomId) => {
+    if (!joinRoomId) {
       alert("no room id")
       return;
     }
@@ -83,7 +108,7 @@ const MainContainer = () => {
             />
 
             <button
-              onClick={()=> handleJoinRoom(joinRoomId, location)}
+              onClick={() => handleJoinRoom(joinRoomId)}
               className="bg-gray-800 text-white px-4 py-2 rounded"
             >
               Join Link
@@ -107,7 +132,12 @@ const MainContainer = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          <Marker position={location} />
+          {users.map(user => (
+            <Marker
+              key={user.id}
+              position={user.location}
+            />
+          ))}
 
         </MapContainer>
 

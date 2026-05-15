@@ -5,6 +5,8 @@ import { createRoom, joinRoom } from '../services/roomService';
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot } from "firebase/firestore"
 import { db } from '../firebaseConfig';
+import { Icon } from 'leaflet';
+import locationPing from "../img/location-pin.png";
 
 const MainContainer = () => {
   const { location, error } = useLocation();
@@ -14,7 +16,7 @@ const MainContainer = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('create'); // 'create' | 'join'
+  const [activeTab, setActiveTab] = useState('create'); 
 
   useEffect(() => {
     if (!joinRoomId && !roomId) return;
@@ -44,7 +46,7 @@ const MainContainer = () => {
       alert("Failed to create room");
     } finally {
       setIsCreating(false);
-    }
+    } 
   };
 
   const handleJoinRoom = async (id) => {
@@ -70,6 +72,11 @@ const MainContainer = () => {
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+const customIcon = new Icon({
+    iconUrl: locationPing,
+    iconSize: [24,24]
+});
 
   if (error) {
     return (
@@ -287,11 +294,12 @@ const MainContainer = () => {
             <Marker
               key={user.id}
               position={user.location}
+              icon={customIcon}
             >
-              {/* You can add custom popup here if needed */}
             </Marker>
           ))}
         </MapContainer>
+       
 
         {/* FLOATING STATS OVERLAY */}
         {isInRoom && (

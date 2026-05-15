@@ -49,17 +49,25 @@ const MainContainer = () => {
     } 
   };
 
+  console.log(users.length)
+
   const handleJoinRoom = async (id) => {
     if (!id.trim()) {
       alert("Please enter a room ID");
       return;
     }
+
+    if(users.length >=2){
+      alert("Max user")
+      return
+    }
+
     setIsJoining(true);
     try {
       await joinRoom(id, location);
       setJoinRoomId(id);
     } catch (err) {
-      alert("Failed to join room");
+      alert(err.message);
     } finally {
       setIsJoining(false);
     }
@@ -300,45 +308,6 @@ const customIcon = new Icon({
           ))}
         </MapContainer>
        
-
-        {/* FLOATING STATS OVERLAY */}
-        {isInRoom && (
-          <div className="absolute bottom-6 left-6 z-[1000] bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-2xl p-4 shadow-2xl max-w-xs">
-            <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              Active Users
-            </h3>
-            <div className="space-y-2 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-              {users.length === 0 ? (
-                <p className="text-xs text-slate-500 italic">Waiting for users...</p>
-              ) : (
-                users.map((user, idx) => (
-                  <div key={user.id} className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                      style={{
-                        background: `linear-gradient(135deg, hsl(${idx * 60 + 200}, 70%, 50%), hsl(${idx * 60 + 220}, 70%, 40%))`
-                      }}
-                    >
-                      {user.id?.charAt(0)?.toUpperCase() || 'U'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-200 truncate">{user.id}</p>
-                      <p className="text-[10px] text-slate-500">
-                        {user.location?.[0]?.toFixed(4)}, {user.location?.[1]?.toFixed(4)}
-                      </p>
-                    </div>
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* LOCATION PILL */}
         <div className="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 shadow-lg flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
           <span className="text-xs font-mono text-slate-300">

@@ -1,4 +1,4 @@
-import { doc, setDoc } from "firebase/firestore";
+import {  setDoc ,runTransaction, doc, collection} from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
 export const createRoom = async (location) => {
@@ -21,21 +21,27 @@ export const createRoom = async (location) => {
     return roomid;
 };
 
-export const joinRoom = async (roomid, location) =>{
 
-     const userId = crypto.randomUUID();
+export const joinRoom = async (roomid, location) => {
+  const userId = crypto.randomUUID();
+  const roomsRef = doc(db, "rooms", roomid);
+  const usersRef = collection(db, "rooms", roomid, "users")
 
-     await setDoc(
-        doc(db, "rooms", roomid, "users", userId),
-        {
-            joinedAt: Date.now(),
-            location: location,
-        }
+  await runTransaction(db, async (transaction) => {
 
-    );
+    const roomSnap = await transaction.get(roomsRef);
 
-     alert("joining room")
+    if (roomSnap.size >= 2) {
+      throw new Error("Room is full");
+    }
 
-    return userid
+    const userRef = doc(usersRef, userId);
 
-}
+    transaction.set(userRef, {
+      joinedAt: Date.now(),
+      location: location,
+    });
+  });
+
+  return userId;
+};

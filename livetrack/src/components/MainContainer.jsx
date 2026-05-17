@@ -7,17 +7,20 @@ import { collection, onSnapshot } from "firebase/firestore"
 import { db } from '../firebaseConfig';
 import { Icon } from 'leaflet';
 import locationPing from "../img/location-pin.png";
+import locationPinOther from "../img/location-pin-other.png";
 
 const MainContainer = () => {
   const { location, error } = useLocation();
   const [roomId, setRoomId] = useState('');
   const [joinRoomId, setJoinRoomId] = useState('');
   const [users, setUsers] = useState([]);
+  const [userId, setUserId] = useState(null)
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('create'); 
+  const [activeTab, setActiveTab] = useState('create');
 
+  let isMe = false
   useEffect(() => {
     if (!joinRoomId && !roomId) return;
     const activeRoom = joinRoomId || roomId;
@@ -36,20 +39,30 @@ const MainContainer = () => {
     return () => unsub();
   }, [roomId, joinRoomId]);
 
+  useEffect(() => {
+    let id = localStorage.getItem("userId")
+
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("userId", id);
+    }
+
+    setUserId(id);
+  }, [])
+
+
   const handleCreateRoom = async () => {
     setIsCreating(true);
     try {
-      const id = await createRoom(location);
+      const id = await createRoom(location, userId);
       setRoomId(id);
       setActiveTab('create');
     } catch (err) {
       alert("Failed to create room");
     } finally {
       setIsCreating(false);
-    } 
+    }
   };
-
-  console.log(users.length)
 
   const handleJoinRoom = async (id) => {
     if (!id.trim()) {
@@ -57,17 +70,18 @@ const MainContainer = () => {
       return;
     }
 
-    if(users.length >=2){
+    if (users.length >= 2) {
       alert("Max user")
       return
     }
 
     setIsJoining(true);
+
     try {
-      await joinRoom(id, location);
+      await joinRoom(id, location,userId);
       setJoinRoomId(id);
     } catch (err) {
-      alert(err.message);
+      console.log(err.message);
     } finally {
       setIsJoining(false);
     }
@@ -81,10 +95,15 @@ const MainContainer = () => {
     }
   };
 
-const customIcon = new Icon({
+  const myIcon = new Icon({
     iconUrl: locationPing,
-    iconSize: [24,24]
-});
+    iconSize: [24, 24]
+  });
+
+  const otherIcon = new Icon({
+    iconUrl: locationPinOther,
+    iconSize: [24, 24]
+  })
 
   if (error) {
     return (
@@ -161,8 +180,8 @@ const customIcon = new Icon({
                 <button
                   onClick={() => setActiveTab('create')}
                   className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${activeTab === 'create'
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }`}
                 >
                   Create Room
@@ -170,8 +189,8 @@ const customIcon = new Icon({
                 <button
                   onClick={() => setActiveTab('join')}
                   className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${activeTab === 'join'
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25'
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }`}
                 >
                   Join Room
@@ -298,16 +317,19 @@ const customIcon = new Icon({
           />
 
           {/* CUSTOM USER MARKERS */}
-          {users.map((user, index) => (
-            <Marker
-              key={user.id}
-              position={user.location}
-              icon={customIcon}
-            >
-            </Marker>
-          ))}
+          {users.map((user) => {
+            const isMe = user.id === userId;
+
+            return (
+              <Marker
+                key={user.id}
+                position={user.location}
+                icon={isMe ? myIcon : otherIcon}
+              />
+            );
+          })}
         </MapContainer>
-       
+
         <div className="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 shadow-lg flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
           <span className="text-xs font-mono text-slate-300">

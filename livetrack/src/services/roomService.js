@@ -1,9 +1,10 @@
-import {  setDoc ,runTransaction, doc, collection} from "firebase/firestore";
+import { doc, collection, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
-export const createRoom = async (location) => {
-    const roomid = crypto.randomUUID();
-    const userid = crypto.randomUUID();
+
+export const createRoom = async (location, userId) => {
+
+  const roomId = crypto.randomUUID();
 
     if (!location) {
         console.log("No location yet");
@@ -11,36 +12,27 @@ export const createRoom = async (location) => {
     }
 
     await setDoc(
-        doc(db, "rooms", roomid, "users", userid),
+        doc(db, "rooms", roomId, "users", userId),
         {
             createdAt: Date.now(),
             location: location
         }
     );
 
-    return roomid;
+    return roomId;
 };
 
+export const joinRoom = async (roomid, location, userId) => {
+  const usersRef = collection(db, "rooms", roomid, "users");
+  const snapshot = await getDocs(usersRef);
 
-export const joinRoom = async (roomid, location) => {
-  const userId = crypto.randomUUID();
-  const roomsRef = doc(db, "rooms", roomid);
-  const usersRef = collection(db, "rooms", roomid, "users")
+  if (snapshot.size >= 2) {
+    throw new Error("Room is full");
+  }
 
-  await runTransaction(db, async (transaction) => {
-
-    const roomSnap = await transaction.get(roomsRef);
-
-    if (roomSnap.size >= 2) {
-      throw new Error("Room is full");
-    }
-
-    const userRef = doc(usersRef, userId);
-
-    transaction.set(userRef, {
+  await setDoc(doc(usersRef, userId), {
       joinedAt: Date.now(),
       location: location,
-    });
   });
 
   return userId;

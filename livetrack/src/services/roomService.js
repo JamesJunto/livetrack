@@ -1,7 +1,6 @@
 import { doc, collection, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
-
 export const createRoom = async (location, userId) => {
 
   const roomId = crypto.randomUUID();

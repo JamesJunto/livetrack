@@ -1,5 +1,5 @@
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, Polyline } from 'react-leaflet';
 import { useLocation } from '../hooks/useLocation';
 import { createRoom, joinRoom } from '../services/roomService';
 import { useState, useEffect } from 'react';
@@ -21,18 +21,18 @@ const MainContainer = () => {
   const [activeTab, setActiveTab] = useState('create');
 
   let isMe = false
+  
   useEffect(() => {
     if (!joinRoomId && !roomId) return;
     const activeRoom = joinRoomId || roomId;
 
-    const unsub = onSnapshot(
-      collection(db, "rooms", activeRoom, "users"),
-      (snapshot) => {
+    const unsub = onSnapshot(collection(db, "rooms", activeRoom, "users"),(snapshot) => {
         const data = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
         setUsers(data);
+
       }
     );
 
@@ -90,20 +90,24 @@ const MainContainer = () => {
   const copyToClipboard = () => {
     if (roomId) {
       navigator.clipboard.writeText(roomId);
-      setCopied(true);
+      setCopied(true);  
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   const myIcon = new Icon({
     iconUrl: locationPing,
-    iconSize: [24, 24]
+    iconSize: [34, 34]
   });
 
   const otherIcon = new Icon({
     iconUrl: locationPinOther,
-    iconSize: [24, 24]
+    iconSize: [34, 34]
   })
+
+  const pointList = users.map(user=>user.location)
+ 
+
 
   if (error) {
     return (
@@ -144,6 +148,7 @@ const MainContainer = () => {
   const activeRoomId = roomId || joinRoomId;
 
   return (
+    
     <div className="h-screen w-full flex flex-col bg-slate-950 overflow-hidden">
 
       {/* GLASSMORPHISM HEADER */}
@@ -311,25 +316,31 @@ const MainContainer = () => {
           className="h-full w-full z-10"
           zoomControl={false}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          />
 
-          {/* CUSTOM USER MARKERS */}
+      <TileLayer
+        attribution='&copy; OpenStreetMap contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+
+        {/* CUSTOM USER MARKERS */}
+
           {users.map((user) => {
             const isMe = user.id === userId;
-
             return (
               <Marker
                 key={user.id}
                 position={user.location}
                 icon={isMe ? myIcon : otherIcon}
               />
+
             );
+
           })}
+           <Polyline positions={pointList} pathOptions={{ color: "red", weight: 3, opacity: 0.5, }} />
+
         </MapContainer>
 
+  
         <div className="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 shadow-lg flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
           <span className="text-xs font-mono text-slate-300">

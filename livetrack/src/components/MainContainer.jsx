@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import { useLocation } from '../hooks/useLocation';
 import { createRoom, joinRoom } from '../services/roomService';
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot } from "firebase/firestore"
+import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore"
 import { db } from '../firebaseConfig';
 import { Icon } from 'leaflet';
 import locationPing from "../img/location-pin.png";
@@ -47,6 +47,19 @@ const MainContainer = () => {
     }
     setUserId(id);
   }, []);
+
+  useEffect(() => {
+    const activeRoom = roomId || joinRoomId;
+
+    if (!activeRoom || !location || !userId) return;
+
+    updateDoc(
+      doc(db, "rooms", activeRoom, "users", userId),
+      {
+        location,
+      }
+    );
+  }, [location, roomId, joinRoomId, userId]);
 
   const handleCreateRoom = async () => {
     setIsCreating(true);
@@ -160,7 +173,15 @@ const MainContainer = () => {
               />
             );
           })}
-          <Polyline positions={pointList} pathOptions={{ color: "red", weight: 4, opacity: 0.5 }} />
+          <Polyline
+            positions={pointList}
+            pathOptions={{
+              color: "red",
+              weight: 4,
+              opacity: 0.7,
+              dashArray: "10, 10",
+            }}
+          />
         </MapContainer>
       </main>
 
@@ -199,9 +220,9 @@ const MainContainer = () => {
 
       {/* ─── FLOATING SIDEBAR (right side) ─── */}
       <aside className={`
-        fixed top-2 bottom-2 right-2 z-50 w-72
+        fixed  right-0 z-50 w-72 h-full
         bg-white/95 backdrop-blur-xl
-        rounded-2xl shadow-2xl shadow-black/15
+        rounded-[5px] shadow-2xl shadow-black/15
         border border-white/80
         flex flex-col overflow-hidden
         transform transition-transform duration-300 ease-in-out
@@ -247,7 +268,7 @@ const MainContainer = () => {
               className={`flex-1 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${activeTab === 'create'
                 ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               Create Room
             </button>
@@ -256,7 +277,7 @@ const MainContainer = () => {
               className={`flex-1 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${activeTab === 'join'
                 ? 'bg-white text-emerald-600 shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               Join Room
             </button>
@@ -377,12 +398,12 @@ const MainContainer = () => {
                       className={`flex items-center gap-2.5 p-2.5 rounded-2xl border transition-all ${isCurrentUser
                         ? 'bg-blue-50 border-blue-200'
                         : 'bg-gray-50 border-gray-100'
-                      }`}
+                        }`}
                     >
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCurrentUser
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-200 text-gray-600'
-                      }`}>
+                        }`}>
                         {isCurrentUser ? 'ME' : 'U'}
                       </div>
                       <div className="flex-1 min-w-0">

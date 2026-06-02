@@ -21,6 +21,7 @@ export const createRoom = async (location, userId) => {
     return roomId;
 };
 
+
 export const joinRoom = async (roomid, location, userId) => {
   const usersRef = collection(db, "rooms", roomid, "users");
   const snapshot = await getDocs(usersRef);

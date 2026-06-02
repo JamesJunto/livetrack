@@ -10,7 +10,7 @@ export const useLocation = () => {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setLocation([
           position.coords.latitude,
@@ -24,6 +24,10 @@ export const useLocation = () => {
         enableHighAccuracy: true
       }
     );
+
+  return () => {
+    navigator.geolocation.clearWatch(watchId);
+  };
   }, []);
 
   return { location, error };

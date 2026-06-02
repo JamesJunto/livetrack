@@ -137,8 +137,8 @@ const MainContainer = () => {
       {/* ─── MAP (full bleed background) ─── */}
       <main className="absolute inset-0 z-0">
         <MapContainer
-          center={location}
-          zoom={15}
+          center={[12.8797, 121.7740]}
+          zoom={6}
           className="h-full w-full"
           zoomControl={false}
         >

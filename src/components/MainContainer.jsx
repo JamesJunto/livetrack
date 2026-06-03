@@ -53,11 +53,7 @@ const MainContainer = () => {
 
     if (!activeRoom || !location || !userId) return;
 
-    updateDoc(
-      doc(db, "rooms", activeRoom, "users", userId),
-      {
-        location,
-      }
+    updateDoc(doc(db, "rooms", activeRoom, "users", userId), { location, }
     );
   }, [location, roomId, joinRoomId, userId]);
 
@@ -105,6 +101,34 @@ const MainContainer = () => {
   const myIcon = new Icon({ iconUrl: locationPing, iconSize: [34, 34] });
   const otherIcon = new Icon({ iconUrl: locationPinOther, iconSize: [34, 34] });
   const pointList = users.map(user => user.location);
+
+
+  const calculateDistance = (pointList) => {
+    const R = 6371;
+
+    if (!pointList || pointList.length < 2) {
+      return 0;
+    }
+
+    const [[lat1, lon1], [lat2, lon2]] = pointList;
+
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  };
+
+  const distance = calculateDistance(pointList)
+
+
 
   if (error) {
     return (
@@ -433,6 +457,25 @@ const MainContainer = () => {
             </div>
             <p className="text-xs font-mono text-gray-700 break-all">
               {location[0].toFixed(6)}, {location[1].toFixed(6)}
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Distance
+                </p>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {distance.toFixed(1)}km
+                </h3>
+              </div>
+
+
+            </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Distance from your current location
             </p>
           </div>
 
